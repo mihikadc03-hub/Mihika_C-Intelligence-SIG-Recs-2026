@@ -1,2 +1,3 @@
 .DS_Store
 non-mandatory-tasks/quantvision-quantization-segmentation/QuantVision_dataset.zip
+mandatory-tasks/recommender-systems-cf-to-dlrm/RecommendationTasks/01_CollaborativeFiltering/data/

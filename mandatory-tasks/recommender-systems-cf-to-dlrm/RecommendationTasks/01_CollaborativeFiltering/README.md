@@ -27,3 +27,24 @@ For the model-based approach, see the [matrix factorization video tutorial](http
 ## Deliverables
 
 Submit one notebook or clean script covering both approaches, along with the preprocessing and split decisions, comparison plots, and metrics.
+
+## Experimental Results & Visualizations
+
+| Evaluation Metrics Comparison | Neighborhood Size Sensitivity (K) | Latent Factor Training Convergence |
+| :---: | :---: | :---: |
+| ![Metrics Comparison](cf_comparison_metrics.png) | ![K Sensitivity](memory_cf_k_tuning.png) | ![MF Convergence](mf_training_curve.png) |
+
+### Performance Summary Table (MovieLens-100K)
+
+| Model Architecture | Test RMSE (↓) | Test MAE (↓) | Precision@10 (↑) | Recall@10 (↑) | NDCG@10 (↑) | Inference Latency |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Memory-Based: User-CF (Pearson)** | 0.9382 | 0.7295 | 0.6638 | 0.9138 | 0.9248 | 0.62s |
+| **Memory-Based: User-CF (Cosine)** | 0.9447 | 0.7359 | 0.6450 | 0.8940 | 0.9213 | 0.68s |
+| **Memory-Based: Item-CF (Adj. Cosine)** | 0.9400 | 0.7313 | 0.6513 | 0.8988 | 0.9052 | 0.54s |
+| **Model-Based: Matrix Factorization (SGD)** | **0.9188** | **0.7196** | 0.6513 | 0.9010 | 0.9186 | **0.16s** |
+
+> **Single-File Execution:** All components (worked example, data processing, User-CF, Item-CF, SGD Matrix Factorization, K-tuning, and metric calculations) are contained in a single self-contained file: [`task_1_1.py`](task_1_1.py).
+>
+> ```powershell
+> python task_1_1.py
+> ```

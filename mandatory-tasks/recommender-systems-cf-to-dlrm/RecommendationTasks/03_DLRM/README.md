@@ -23,3 +23,29 @@ Include the paper notes, from-scratch implementation, ablation results, final co
 ## Resources
 
 - [DLRM paper](https://arxiv.org/abs/1906.00091)
+
+## Experimental Report & Results
+
+### Preprocessing Decisions
+Consistent with Task 2, missing numerical values were imputed with `0`, logged, and standardized. Categorical variables were label-encoded with unseen categories mapped to a safe `<UNK>` token (index 0). This consistency ensures no data leakage and an identical feature distribution for fair comparison.
+
+### Architectures
+1. **DLRM (With Interactions):** The bottom MLP projects dense features into a dimension $D=16$. Categorical variables are embedded into $D=16$. The interaction module computes explicit pairwise dot products between all embeddings and the dense representation, outputting $\frac{27 \times 26}{2} = 351$ interaction features. These are concatenated with the dense representation and passed through the top MLP (`[128, 64]`).
+2. **Ablation Model (No Interactions):** The interaction module is removed entirely. The dense representation and categorical embeddings are simply concatenated into a flat vector before passing into the top MLP.
+
+### Final Results
+
+| Metric | DLRM | DLRM (No Interactions) | Task 2 (Vanilla NN) |
+| :--- | :---: | :---: | :---: |
+| **ROC-AUC** | 0.6090 | 0.6726 | 0.6348 |
+| **PR-AUC** | 0.0539 | 0.0763 | 0.0621 |
+| **Log Loss** | 0.1854 | 0.1466 | 0.1675 |
+| **Accuracy** | 0.9664 | 0.9665 | 0.9665 |
+| **F1-Score** | 0.0059 | 0.0000 | 0.0000 |
+
+### Architecture Choices & Real Recommendation Behavior
+- **DLRM vs. Matrix Factorization:** MF only considers user-item pairs (2 embeddings). DLRM handles arbitrary context by injecting *multiple* embeddings and forcing them to interact explicitly, simulating higher-order correlations crucial for CTR.
+- **DLRM vs. Vanilla NN:** While Vanilla NNs rely on fully connected layers to implicitly learn feature interactions, DLRM enforces dot products upfront.
+- **Overfitting & Complexity:** In this specific small-scale CTR dataset, the pairwise interactions introduce high complexity, causing the DLRM to overfit rapidly (seen in training curves). The ablation model (no explicit interactions) generalized better (`AUC: 0.6726`). In production, DLRM requires immense data scale and strong regularization to truly shine over simpler baselines.
+
+![DLRM Learning Curves](dlrm_learning_curves.png)

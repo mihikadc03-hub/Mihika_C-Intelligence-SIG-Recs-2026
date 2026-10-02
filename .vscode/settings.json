@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./mandatory-tasks/recommender-systems-cf-to-dlrm/datasets"
+    ]
+}
