@@ -1,0 +1,5 @@
+Model / Representation,Optimal Threshold,Mean F1 Score,Precision,Recall,Fit Time (s)
+Baseline: TF-IDF (Word Unigrams),0.55,0.6542,0.8109,0.6555,5.78
+"Experiment 1: Word N-Grams (1, 2)",0.6,0.6214,0.8175,0.5982,6.8
+"Experiment 2: Char N-Grams (3, 5)",0.65,0.6282,0.7886,0.6358,15.14
+Experiment 3: Preprocessed + Char/Word,0.65,0.6335,0.7711,0.6585,12.95
