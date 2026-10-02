@@ -9,12 +9,42 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from sklearn.metrics import roc_auc_score, accuracy_score, precision_recall_curve, auc, log_loss, f1_score
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 # Add dataset directory to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'datasets')))
 # pyrefly: ignore [missing-import]
 from data_utils import load_data
+
+torch.manual_seed(42)
+np.random.seed(42)
+
+def resolve_data_dir(data_dir_arg=None):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = []
+    if data_dir_arg:
+        candidates.append(data_dir_arg)
+        candidates.append(os.path.join(script_dir, data_dir_arg))
+    candidates.extend([
+        os.path.abspath(os.path.join(script_dir, '..', '..', 'datasets', 'ctr_data')),
+        os.path.abspath(os.path.join(os.getcwd(), 'mandatory-tasks', 'recommender-systems-cf-to-dlrm', 'datasets', 'ctr_data')),
+        os.path.abspath(os.path.join(os.getcwd(), 'datasets', 'ctr_data')),
+    ])
+    for p in candidates:
+        if p and os.path.isdir(p) and os.path.exists(os.path.join(p, 'train.csv')):
+            return p
+    # Try extracting zip if not unzipped
+    zip_path = os.path.abspath(os.path.join(script_dir, '..', '..', 'datasets', 'dataset (tasks 2 and 3).zip'))
+    if os.path.exists(zip_path):
+        import zipfile
+        target_dir = os.path.abspath(os.path.join(script_dir, '..', '..', 'datasets', 'ctr_data'))
+        os.makedirs(target_dir, exist_ok=True)
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(target_dir)
+        return target_dir
+    return os.path.abspath(os.path.join(script_dir, '..', '..', 'datasets', 'ctr_data'))
 
 class VanillaNN(nn.Module):
     def __init__(self, num_dense_features, vocab_sizes, embed_dim=16, hidden_dims=[256, 128, 64]):
@@ -189,7 +219,7 @@ def compute_metrics(y_true, y_pred_prob, threshold=0.5):
 
 def main():
     parser = argparse.ArgumentParser(description="Task 2: Neural CTR Models")
-    parser.add_argument('--data_dir', type=str, default='../../datasets/ctr_data', help='Path to unzipped CTR data')
+    parser.add_argument('--data_dir', type=str, default=None, help='Path to unzipped CTR data')
     parser.add_argument('--epochs', type=int, default=10, help='Number of epochs')
     parser.add_argument('--batch_size', type=int, default=1024, help='Batch size')
     args = parser.parse_args()
@@ -197,8 +227,10 @@ def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Using device: {device}")
     
-    train_path = os.path.join(args.data_dir, 'train.csv')
-    test_path = os.path.join(args.data_dir, 'test.csv')
+    data_dir = resolve_data_dir(args.data_dir)
+    print(f"Using dataset directory: {data_dir}")
+    train_path = os.path.join(data_dir, 'train.csv')
+    test_path = os.path.join(data_dir, 'test.csv')
     
     print("Loading data...")
     train_dataset, val_dataset, test_dataset, preprocessor = load_data(train_path, test_path)
@@ -229,18 +261,27 @@ def main():
     print("DCN Metrics:", dcn_metrics)
     
     # Plotting Learning Curves
+    output_dir = os.path.dirname(os.path.abspath(__file__))
+    plot_path = os.path.join(output_dir, 'learning_curves.png')
+    
+    epochs_range = list(range(1, len(vanilla_train_loss) + 1))
     plt.figure(figsize=(10, 5))
-    plt.plot(vanilla_train_loss, label='Vanilla NN Train')
-    plt.plot(vanilla_val_loss, label='Vanilla NN Val')
-    plt.plot(dcn_train_loss, label='DCN Train', linestyle='--')
-    plt.plot(dcn_val_loss, label='DCN Val', linestyle='--')
+    plt.plot(epochs_range, vanilla_train_loss, marker='o', label='Vanilla NN Train')
+    plt.plot(epochs_range, vanilla_val_loss, marker='o', label='Vanilla NN Val')
+    plt.plot(epochs_range, dcn_train_loss, marker='s', linestyle='--', label='DCN Train')
+    plt.plot(epochs_range, dcn_val_loss, marker='s', linestyle='--', label='DCN Val')
     plt.xlabel('Epochs')
     plt.ylabel('BCE Loss')
     plt.title('Training & Validation Curves')
+    if len(epochs_range) <= 20:
+        plt.xticks(epochs_range)
+    plt.grid(True, linestyle='--', alpha=0.6)
     plt.legend()
-    plt.savefig('learning_curves.png')
+    plt.tight_layout()
+    plt.savefig(plot_path, dpi=200)
+    plt.close()
     
-    print("\nPlots saved to learning_curves.png")
+    print(f"\nPlots saved to {plot_path}")
 
 if __name__ == '__main__':
     main()
