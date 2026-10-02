@@ -1,5 +1,34 @@
 # Task 2: Neural CTR Prediction
 
+
+## Experimental Report & Results
+
+### Preprocessing Decisions
+1. **Numerical Features (Dense):** Missing values were imputed with `0`. Since CTR numeric features often exhibit long-tail distributions, a `log1p(x)` transform was applied before standardizing using `StandardScaler`.
+2. **Categorical Features (Sparse):** Missing values were imputed with a special `<UNK>` token. An ordinal mapping was generated for each categorical column, mapping known values to unique integer indices, and reserving `0` for `<UNK>`. This helps handle unseen categories cleanly during inference.
+
+### Architectures
+1. **Vanilla Neural Network:** Uses a standard Multi-Layer Perceptron (MLP). Categorical features are embedded into dense vectors of dimension `16`. These embeddings are concatenated with the dense features and passed through hidden layers of sizes `[256, 128, 64]`, ending in a 1-unit output layer.
+2. **Deep & Cross Network (DCN):** Replaces the pure MLP with two parallel paths. The *Deep Network* is similar to the Vanilla NN (`[256, 128]`), while the *Cross Network* explicitly captures bounded-degree feature interactions. The outputs of both are concatenated for the final prediction.
+
+### Final Results
+
+| Metric | Vanilla NN | Deep & Cross Network (DCN) |
+| :--- | :---: | :---: |
+| **ROC-AUC** | 0.6348 | 0.6071 |
+| **PR-AUC** | 0.0621 | 0.0539 |
+| **Log Loss** | 0.1675 | 0.1792 |
+| **Accuracy** | 0.9665 | 0.9665 |
+| **F1-Score** | 0.0000 | 0.0000 |
+
+*Note: The highly imbalanced nature of the dataset (mostly negative clicks) leads to a high accuracy but low F1-score with a default 0.5 threshold. A custom threshold determined via PR-curve would be needed for operational use.*
+
+### Learning Curves & Overfitting Analysis
+Both models show signs of overfitting early in training. The training loss decreases consistently across 10 epochs, while the validation loss drops for the first 2-4 epochs and then steadily increases. The DCN models complex explicit interactions and seems to overfit even more aggressively on this subset compared to the Vanilla NN. Early stopping or higher regularization (e.g., L2 weight decay, dropout) is necessary.
+
+![Learning Curves](learning_curves.png)
+
+
 Real recommendation systems rarely see only a user and an item. They also see context: device, time, placement, campaign, and a mixture of numerical and categorical descriptors. This is the step where our toy preference table starts to resemble an ad-ranking system deciding what to show in a split second.
 
 ## Dataset
