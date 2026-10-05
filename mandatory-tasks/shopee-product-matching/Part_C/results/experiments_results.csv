@@ -1,3 +1,4 @@
 Model / Representation,Embedding Dimension,Similarity Measure,Optimal Threshold,Macro F1 Score,Precision,Recall,Inference / Search Speed
 Baseline: Image pHash (Perceptual Hash),64-bit DCT Hash,Exact Hash Match,Exact (0 Hamming),0.5531,0.9941,0.4222,< 0.1s (Hash lookup)
 Experiment 1: Pretrained ResNet-50,2048-dim Dense Vector,Cosine Similarity,0.85,0.6447,0.9338,0.5681,~2.5 mins (T4 GPU batch 64)
+Experiment 2: ResNet-50 + Product Text Embeddings,2048+768-dim Dense Vector,Cosine Similarity,0.78,0.6772,0.9346,0.5887,~5.2 mins (T4 GPU batch 64)

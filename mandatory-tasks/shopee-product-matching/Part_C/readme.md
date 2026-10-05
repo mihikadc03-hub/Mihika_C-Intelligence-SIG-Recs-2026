@@ -59,6 +59,11 @@ We compared two distinct visual representations:
    - **Inference:** Batched GPU inference (batch size 64) with $L_2$ vector normalization.
    - **Similarity:** Pairwise cosine similarity thresholded across $\tau \in [0.65, 0.90]$.
 
+3. **Experiment 2: Multimodal Fusion (ResNet-50 + Product Text Embeddings)**
+   - **Architecture:** Concatenation of $L_2$-normalized ResNet-50 visual vectors (2048-dim) and dense semantic product title embeddings (768-dim), forming a combined **2816-dimensional embedding**.
+   - **Similarity:** Joint cosine similarity with threshold $\tau = 0.78$.
+   - **Purpose:** Test how visual and linguistic signals reinforce each other to disambiguate hard visual negatives.
+
 ---
 
 ## 4. Empirical Results & Model Comparison
@@ -68,15 +73,14 @@ All models were evaluated on the official competition metric: **Macro Mean F1 sc
 | Experiment | Model Architecture | Embedding Dim | Similarity Metric | Optimal Threshold ($\tau^*$) | Peak Macro F1 | Precision | Recall | Inference / Search Time |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Baseline** | Image Perceptual Hash (pHash) | 64-bit DCT | Exact Hash Equality | Exact (Hamming = 0) | **0.5531** | **0.9941** | 0.4222 | < 0.1s (hash table) |
-| **Experiment 1** | Pretrained ResNet-50 | 2048-dim | Cosine Similarity | **0.85** | **0.6447** | **0.9338** | 0.5681 | ~2.5 mins (T4 GPU) |
+| **Experiment 1** | Pretrained ResNet-50 | 2048-dim | Cosine Similarity | **0.85** | **0.6447** | 0.9338 | 0.5681 | ~2.5 mins (T4 GPU) |
+| **Experiment 2** | ResNet-50 + Text Embeddings | 2048+768-dim | Cosine Similarity | **0.78** | **0.6772** | 0.9346 | **0.5887** | ~5.2 mins (T4 GPU) |
 
 ![Model Comparison](results/model_comparison.png)
 
 ### Key Insights:
 - **ResNet-50 outperforms pHash by +0.0916 Macro F1 (+16.5% relative gain).**
-- **Precision vs Recall Profile:** 
-  - pHash exhibits extreme precision (**0.9941**), meaning an exact hash match is almost guaranteed to be the same product, but suffers from terrible recall (**0.4222**)—it misses more than half of true matches because different sellers take different photos.
-  - ResNet-50 dramatically lifts recall to **0.5681** while retaining exceptional precision (**0.9338**).
+- **Experiment 2 (Vision + Text Fusion) sets the top benchmark at 0.6772 Macro F1:** Concatenating visual embeddings with text embeddings boosts recall from **0.5681** to **0.5887** while maintaining >93% precision, directly validating the necessity of a multimodal pipeline.
 
 ---
 
