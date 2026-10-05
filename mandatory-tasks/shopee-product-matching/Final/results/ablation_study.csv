@@ -1,0 +1,7 @@
+Config,Architecture / Description,Text Features,Visual Features,pHash FastPath,Fusion Method,Optimal Threshold,Macro F1 Score,Precision,Recall
+A,Unimodal Text Only (TF-IDF Unigrams),Yes (TF-IDF),No,No,None (Unimodal),0.55,0.6542,0.8109,0.6555
+B,Unimodal Vision (Perceptual Hash pHash),No,Yes (64-bit DCT),Yes,None (Hash Match),Exact (0 Hamming),0.5531,0.9941,0.4222
+C,Unimodal Vision (Pretrained ResNet-50),No,Yes (2048-dim ResNet),No,None (Unimodal),0.85,0.6447,0.9338,0.5681
+D,Feature-Level Concatenation Fusion,Yes (768-dim Text),Yes (2048-dim ResNet),No,Early Feature Concat,0.78,0.6772,0.9346,0.5887
+E,Decision-Level Union (Text ∪ ResNet-50),Yes (TF-IDF),Yes (ResNet-50),No,Late Decision Union,"τ_text=0.70, τ_vis=0.85",0.7185,0.892,0.698
+F (Final),Cascaded Hybrid Multimodal Pipeline (pHash ∪ Text ∪ Vision),Yes (TF-IDF Cleaned),Yes (ResNet-50),Yes,Cascaded Rule + Union,Multi-Threshold Balanced,0.7328,0.8875,0.724
